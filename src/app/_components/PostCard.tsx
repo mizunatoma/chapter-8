@@ -3,7 +3,7 @@ import React from "react";
 import { Post } from "@/app/_types";
 
 type Props = {
-    post: Post;
+  post: Post;
 }
 
 export default function PostCard({ post }: Props) {
