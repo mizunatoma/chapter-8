@@ -2,30 +2,34 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { Post } from "@/app/_types";
+import { MicroCmsPost } from "@/app/_types/MicroCmsPost";
 
 // PostDetailページ
 // → 動的ルーティング（ReactのuseParams的な）を理解する
 
 export default function PostDetail() {
   const { id } = useParams(); 
-  const [post, setPost] = useState<Post | null>(null);
+  const [post, setPost] = useState<MicroCmsPost | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetcher = async () => {
-      try {
-        const res = await fetch(`https://1hmfpsvto6.execute-api.ap-northeast-1.amazonaws.com/dev/posts/${id}`);
-        const data = await res.json();
-        setPost(data.post);
-      } catch (error) {
-        console.error("記事の取得に失敗しました", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetcher();
-  }, [id]);
+      setLoading(true)
+      const res = await fetch(
+        `https://xtdq6xynpn.microcms.io/api/v1/posts/${id}`,　// microCMSのエンドポイント
+        {
+          headers: {
+            'X-MICROCMS-API-KEY': process.env.NEXT_PUBLIC_MICROCMS_API_KEY as string, // APIキーをセット
+          },
+        },
+      )
+      const data = await res.json()
+      setPost(data) // dataをそのままセット
+      setLoading(false)
+    }
+
+    fetcher()
+  }, [id])
 
   if (loading) return <p>読み込み中...</p>
   if (!post) return <p className="text-red-600">記事が見つかりません</p>;
@@ -34,7 +38,7 @@ export default function PostDetail() {
   return (
     <article className="max-w-3x1 mx-auto p-6">
       <Image
-        src="https://placehold.jp/800x400.png"
+        src={post.thumbnail.url}
         alt={`${post.title}`}
         width={800}
         height={400}
@@ -51,7 +55,7 @@ export default function PostDetail() {
               key={index}
               className="px-3 py-1 text-sm border border-blue-500 text-blue-600 rounded"
             >
-              {cat}
+              {cat.name}
             </span>
           ))}
         </div>
