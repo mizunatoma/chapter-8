@@ -1,12 +1,8 @@
 "use client";
 import React from "react";
-import { Post } from "@/app/_types";
+import { MicroCmsPost } from "@/app/_types/MicroCmsPost";
 
-type Props = {
-  post: Post;
-}
-
-export default function PostCard({ post }: Props) {
+export default function PostCard({ post }: { post: MicroCmsPost }) {
   return (
     <div className="border border-gray-300 m-4 p-4">
       <div className="flex justify-between items-center mb-4">
@@ -19,7 +15,7 @@ export default function PostCard({ post }: Props) {
               key={index}
               className="px-3 py-1 text-sm border border-blue-500 text-blue-600 rounded"
             >
-              {cat}
+              {cat.name}
             </span>
           ))}
         </div>
