@@ -7,7 +7,7 @@ import { Posts } from "@/app/_types";
 
 export default function PostDetail() {
   const { id } = useParams(); 
-  const [post, setPost] = useState<Post| null>(null);
+  const [post, setPost] = useState<Posts | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function PostDetail() {
               key={index}
               className="px-3 py-1 text-sm border border-blue-500 text-blue-600 rounded"
             >
-              {cat.name}
+              {cat.category.name}
             </span>
           ))}
         </div>

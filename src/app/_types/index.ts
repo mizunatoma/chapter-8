@@ -5,7 +5,7 @@
 // /api/admin/posts
 export type PostsResponse = {
   status: string;
-  post: Posts[];
+  posts: Posts[];
 }
 
 // /api/admin/posts/[id] (↑の[]内)

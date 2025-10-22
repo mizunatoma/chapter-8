@@ -1,29 +1,83 @@
 "use client";
 
-export default function EditCategoriessPage() {
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import type { Category } from "@/app/_types";
+import { CategoryForm } from '../_components/CategoryForm'
+
+export default function EditCategoriesPage() {
+  const { id } = useParams() as { id?: string };
+  const router = useRouter();
+
+  const [category, setCategory] = useState<Category | null>(null);
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(true);
+
+// ===============================
+// GET
+// ===============================
+  useEffect(() => {
+    const fetcher = async () => {
+      try {
+        const res = await fetch(`/api/admin/categories/${id}`);
+        const { category }: { category: Category } = await res.json()
+        setCategory(category);
+        setName(category.name);
+      } catch (error) {
+        console.error("データ取得エラー：", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetcher();
+  }, [id]);
+
+// ===============================
+// PUT (update)
+// ===============================
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetch(`/api/admin/categories/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      alert("更新しました");
+      router.push("/admin/categories")
+    } catch (error) {
+        console.error("データ取得エラー：", error);
+    } 
+  };
+
+// ===============================
+// DELETE
+// ===============================
+  const handleDelete = async () => {
+    if (!confirm("カテゴリーを削除しますか？")) return;
+    try {
+      await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+      alert("削除しました");
+      router.push("/admin/categories");
+    } catch (error) {
+        console.error("データ取得エラー：", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <p>読み込み中…</p>;
+  if (!category) return <p className="text-red-600">カテゴリーが見つかりません</p>;
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-6">カテゴリー名</h1>
-
-      <form>
-        <div>
-          <label className="block">カテゴリー</label>
-          <input 
-            type="text"
-            className="border rounded w-full p-2"
-          />
-        </div> 
-
-        <div className="flex gap-4 mt-4">
-          <button className="border rounded text-white bg-blue-600 px-4 py-2 hover:bg-blue-700">
-            更新
-          </button>
-          <button className="border rounded text-white bg-red-600 px-4 py-2 hover:bg-red-700">
-            削除
-          </button>
-        </div>
-      </form>
+      <CategoryForm
+        mode="edit"
+        name={name}
+        setName={setName}
+        onSubmit={handleUpdate}
+        onDelete={handleDelete}
+      />   
     </div>
-  )
+  );
 }

@@ -1,21 +1,40 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import type { Category } from "@/app/_types";
 
-export default function AdminPostsPage() {
-  const categories = [
-    { id: 1, category: "React"},
-    { id: 2, category: "TypeScript"},
-    { id: 3, category: "JavaScript"},
-  ]
+export default function AdminCategoriesPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+// ===============================
+// GET
+// ===============================
+  useEffect(() => {
+    const fetcher = async () => {
+      try {
+        const res = await fetch("/api/admin/categories");
+        const data = await res.json();
+        setCategories(data.categories)
+      } catch (error) {
+        console.error("データ取得エラー：", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetcher();
+  }, []);
+
+  if (loading) return <p>読み込み中…</p>;
 
   return (
     <div>
-      <div className="flex justify-between items-center"> 
-        <h2 className="font-bold">記事一覧</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">カテゴリー一覧</h2>
         <Link
-          href="/admin/categories/new"  
-          className="bg-blue-500 rounded text-white px-4 p-2 font-bold"
+          href="/admin/categories/new"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-sm"
         >
           新規作成
         </Link>
@@ -28,11 +47,10 @@ export default function AdminPostsPage() {
             href={`/admin/categories/${category.id}`}
             className="border-b block pb-2 hover:bg-gray-200"
           >
-            <p className="font-semibold">{category.category}</p>
+            <p className="text-base font-semibold text-gray-900 mb-1">{category.name}</p>
           </Link>
         ))}
       </div>
-
     </div>
   );
 }

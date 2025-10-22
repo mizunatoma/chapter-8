@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient()
 
-export const GET = async (request: NextRequest) => {
+export const GET = async (_request: NextRequest) => {
   try {
     // Postを取ってくるときに、中間テーブル（PostCategory）と、その先のCategory情報もまとめて持ってくる
     const posts = await prisma.post.findMany({

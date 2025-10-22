@@ -1,17 +1,17 @@
 "use client";
 import { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation"; //現在のURLパスを取得できるフック
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  // 現在地を取得
+  // 現在のパスを取得
   const pathname = usePathname();
 
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
         {/* サイドバー */}
-        <aside className="w-64 bg-gray-100 border-r">
+        <aside className="w-60 bg-gray-100 border-r">
           <nav className="flex flex-col p-4 space-y-2">
             <Link 
               href="/admin/posts"
