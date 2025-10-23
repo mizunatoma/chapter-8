@@ -12,6 +12,7 @@ export default function EditCategoriesPage() {
   const [category, setCategory] = useState<Category | null>(null);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 // ===============================
 // GET
@@ -37,6 +38,7 @@ export default function EditCategoriesPage() {
 // ===============================
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       await fetch(`/api/admin/categories/${id}`, {
         method: "PUT",
@@ -46,8 +48,10 @@ export default function EditCategoriesPage() {
       alert("更新しました");
       router.push("/admin/categories")
     } catch (error) {
-        console.error("データ取得エラー：", error);
-    } 
+        console.error("データ更新エラー：", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 // ===============================
@@ -55,14 +59,15 @@ export default function EditCategoriesPage() {
 // ===============================
   const handleDelete = async () => {
     if (!confirm("カテゴリーを削除しますか？")) return;
+    setIsSubmitting(true);
     try {
       await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
       alert("削除しました");
       router.push("/admin/categories");
     } catch (error) {
-        console.error("データ取得エラー：", error);
+        console.error("データ削除エラー：", error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -77,6 +82,7 @@ export default function EditCategoriesPage() {
         setName={setName}
         onSubmit={handleUpdate}
         onDelete={handleDelete}
+        isSubmitting={isSubmitting}
       />   
     </div>
   );

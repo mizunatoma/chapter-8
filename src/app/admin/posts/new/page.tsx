@@ -11,22 +11,30 @@ export default function NewPostPage() {
   const [content, setContent] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState('https://placehold.jp/800x400.png');
   const [categories, setCategories] = useState<Partial<Category>[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 // ===============================
 // POST (create)
 // ===============================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault() // フォーム送信時のデフォルト動作（ページ再読み込み）を防止
-  
-    const res = await fetch('/api/admin/posts/', {
-      method: "POST",
-      headers: {'content-Type': 'application/json'},  // JSONを送ることを明示
-      body: JSON.stringify({title, content, thumbnailUrl, categories})
-    })
+    setIsSubmitting(true);
 
-    const { id } = await res.json();  // { id: 3 }
-    router.push(`/admin/posts/${id}`);  // 記事作成後、編集ページへ遷都
-    alert('記事を作成しました');
+    try {
+      const res = await fetch('/api/admin/posts/', {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},  // JSONを送ることを明示
+        body: JSON.stringify({title, content, thumbnailUrl, categories})
+      })
+
+      const { id } = await res.json();  // { id: 3 }
+      router.push(`/admin/posts/${id}`);  // 記事作成後、編集ページへ遷都
+      alert('記事を作成しました');
+    } catch (error) {
+      console.error("データ作成エラー：", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -42,6 +50,7 @@ export default function NewPostPage() {
         categories={categories}
         setCategories={setCategories}        
         onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />      
     </div>
   );

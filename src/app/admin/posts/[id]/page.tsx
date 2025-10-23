@@ -15,6 +15,7 @@ export default function EditPostsPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState("https://placehold.jp/800x400.png");
   const [categories, setCategories] = useState<Partial<Category>[]>([])
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 // ===============================
 // GET
@@ -43,6 +44,7 @@ export default function EditPostsPage() {
 // ===============================
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       await fetch(`/api/admin/posts/${id}`, {
         method: "PUT",
@@ -52,8 +54,10 @@ export default function EditPostsPage() {
       alert("更新しました");
       router.push("/admin/posts");
     } catch (error) {
-      console.error("データ取得エラー：", error);
-    } 
+      console.error("データ更新エラー：", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 // ===============================
@@ -61,15 +65,16 @@ export default function EditPostsPage() {
 // ===============================
   const handleDelete = async () => {
     if (!confirm("記事を削除しますか？")) return;
+    setIsSubmitting(true);
     try {
       await fetch(`/api/admin/posts/${id}`, { 
         method: "DELETE" });
       alert("削除しました");
       router.push("/admin/posts");
     } catch (error) {
-      console.error("データ取得エラー：", error);
+      console.error("データ削除エラー：", error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -89,6 +94,7 @@ export default function EditPostsPage() {
         setCategories={setCategories}
         onSubmit={handleUpdate}
         onDelete={handleDelete}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

@@ -7,6 +7,7 @@ interface Props {
   setName: (title: string) => void
   onSubmit: (e: React.FormEvent) => void
   onDelete?: () => void
+  isSubmitting?: boolean;
 }
 
 export const CategoryForm: React.FC<Props> = ({
@@ -15,6 +16,7 @@ export const CategoryForm: React.FC<Props> = ({
   setName,
   onSubmit,
   onDelete,
+  isSubmitting = false,
 }) => {
   return (
     <form onSubmit={onSubmit}>
@@ -30,6 +32,7 @@ export const CategoryForm: React.FC<Props> = ({
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          disabled={isSubmitting}
         />
       </div>
 
@@ -37,6 +40,7 @@ export const CategoryForm: React.FC<Props> = ({
           <button
             type="submit"
             className="border rounded text-white bg-blue-600 px-4 py-2 hover:bg-blue-700 disabled:opacity-50"
+            disabled={isSubmitting}
           >
             {mode === 'edit' ? '更新' : '作成'}
           </button>
@@ -46,6 +50,7 @@ export const CategoryForm: React.FC<Props> = ({
               type="button"
               onClick={onDelete}
               className="border rounded text-white bg-red-600 px-4 py-2 hover:bg-red-700 disabled:opacity-50"
+              disabled={isSubmitting}
             >
               削除
             </button>

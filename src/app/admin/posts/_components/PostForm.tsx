@@ -15,6 +15,7 @@ interface Props {
   setCategories: (categories: Partial<Category>[]) => void
   onSubmit: (e: React.FormEvent) => void
   onDelete?: () => void
+  isSubmitting?: boolean;
 }
 
 export const PostForm: React.FC<Props> = ({
@@ -29,6 +30,7 @@ export const PostForm: React.FC<Props> = ({
   setCategories,
   onSubmit,
   onDelete,
+  isSubmitting = false,
 }) => {
   return (
     <div>
@@ -45,6 +47,7 @@ export const PostForm: React.FC<Props> = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
+            disabled={isSubmitting}
           />
         </div>
 
@@ -55,6 +58,7 @@ export const PostForm: React.FC<Props> = ({
             className="border rounded w-full p-2"
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -65,6 +69,7 @@ export const PostForm: React.FC<Props> = ({
             className="border rounded w-full p-2"
             value={thumbnailUrl}
             onChange={(e) => setThumbnailUrl(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -78,6 +83,7 @@ export const PostForm: React.FC<Props> = ({
           <CategoriesSelect
             selectedCategories={categories}
             setSelectedCategories={setCategories}
+            isSubmitting={isSubmitting}
           />
         </div>
 
@@ -85,6 +91,7 @@ export const PostForm: React.FC<Props> = ({
           <button
             type="submit"
             className="border rounded text-white bg-blue-600 px-4 py-2 hover:bg-blue-700 disabled:opacity-50"
+            disabled={isSubmitting}
           >
             {mode === 'edit' ? '更新' : '投稿'}
           </button>
@@ -94,6 +101,7 @@ export const PostForm: React.FC<Props> = ({
               type="button"
               onClick={onDelete}
               className="border rounded text-white bg-red-600 px-4 py-2 hover:bg-red-700 disabled:opacity-50"
+              disabled={isSubmitting}
             >
               削除
             </button>
