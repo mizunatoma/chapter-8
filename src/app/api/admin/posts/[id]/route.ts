@@ -33,11 +33,6 @@ export const GET = async(
     })
     return NextResponse.json({ status: 'OK', post: post }, { status: 200 })
 
-    // postがない場合のハンドリング(500の解消)あとで要削除
-    if (!post) {
-      return NextResponse.json({ status: 'Not Found', post: null }, { status: 404 })
-    }
-    
   } catch (error) {
     if (error instanceof Error)
       return NextResponse.json({ status: error.message  }, { status: 400 })
@@ -47,7 +42,7 @@ export const GET = async(
 // ===============================
 // 記事更新（PUT）
 // ===============================
-interface UpdatePostRequestBody {
+export interface UpdatePostRequestBody {
   title: string
   content: string
   categories: { id: number }[] // カテゴリーIDをいくつか持った配列を送る
@@ -61,8 +56,8 @@ export const PUT = async (
   // params から id を取り出す
   const { id } = params
   // リクエストのbodyを取得
-  const body = await request.json()
-  const { title, content, categories, thumbnailUrl }: UpdatePostRequestBody = body
+  const body: UpdatePostRequestBody = await request.json();
+  const { title, content, categories, thumbnailUrl } = body;
   
   try {
     const post = await prisma.post.update({
@@ -90,8 +85,15 @@ export const PUT = async (
       })
     }
 
+    // Date → string に変換
+    const serializedPost = {
+      ...post,
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
+    };
+
     // レスポンス
-    return NextResponse.json({ status: 'OK', post: post }, { status: 200})
+    return NextResponse.json({ status: 'OK', post: serializedPost }, { status: 200})
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ status: error.message }, { status: 400})

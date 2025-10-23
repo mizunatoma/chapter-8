@@ -13,11 +13,13 @@ import { useEffect } from 'react'
 interface Props {
   selectedCategories: Partial<Category>[]    // 一部のデータ(id,name)だけでもOKに
   setSelectedCategories: (categories: Partial<Category>[] ) => void
+  isSubmitting?: boolean;
 }
 
 export const CategoriesSelect: React.FC<Props> = ({
   selectedCategories = [],  // []初期値を指定でエラー防止
   setSelectedCategories,
+  isSubmitting = false,
 }) => {
   const [categories, setCategories] = React.useState<Category[]>([])
 
@@ -45,6 +47,7 @@ export const CategoriesSelect: React.FC<Props> = ({
     <FormControl className="w-full">
       <Select
         multiple 
+        disabled={isSubmitting}
         value={selectedCategories.map((c) => c.id) as number[]}
         onChange={handleChange}
         input={<OutlinedInput />}

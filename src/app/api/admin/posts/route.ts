@@ -40,27 +40,23 @@ export const GET = async (request: NextRequest) => {
 // ===============================
 
 // 記事作成のリクエストボディの型
-interface CreatePostRequestBody {
+export interface CreatePostRequestBody {
   title: string
   content: string
   categories: { id: number }[] // カテゴリーIDをいくつか持った配列を送る
   thumbnailUrl: string
 }
 
-export const POST = async (request: NextRequest, context: any) => {
+export const POST = async (request: NextRequest ) => {
   try {
-    // リクエストのbodyを取得
-    const body = await request.json()
     // フロントから送られてきたbodyを分解し、
     // 各変数に代入しながら、型をCreatePostRequestBodyとして保証している
-    const { title, content, categories, thumbnailUrl }: CreatePostRequestBody = body
+    const body: CreatePostRequestBody = await request.json();
+    const { title, content, categories, thumbnailUrl } = body;
+    
     // 投稿をDBに生成
     const data = await prisma.post.create({
-      data: {
-        title,
-        content,
-        thumbnailUrl,
-      },
+      data: { title, content, thumbnailUrl },
     })
 
     // 中間テーブルに記事に紐づく複数カテゴリを登録

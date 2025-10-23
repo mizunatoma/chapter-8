@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import type { Posts } from "@/app/_types/";
 import { Category } from '@/app/_types/Category'
 import { PostForm } from '../_components/PostForm'
+import type { UpdatePostRequestBody } from "@/app/api/admin/posts/[id]/route"; 
+
 
 export default function EditPostsPage() {
   const { id } = useParams() as { id?: string };  // as { id?: string } は型推論の補助（id が一時的にundefinedの可能性もあるため）
@@ -46,10 +48,19 @@ export default function EditPostsPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      //categoriesのidのみ取り出して型に合わせる
+      const categoryIds = categories.map((c) => ({ id: c.id! }));
+      const body: UpdatePostRequestBody = {
+        title,
+        content,
+        thumbnailUrl,
+        categories: categoryIds, //
+      };
+
       await fetch(`/api/admin/posts/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content, thumbnailUrl, categories }),
+        body: JSON.stringify(body),
       });
       alert("更新しました");
       router.push("/admin/posts");

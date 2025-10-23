@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Category } from "@/app/_types"
 import { PostForm } from '../_components/PostForm'
+import type { CreatePostRequestBody } from "@/app/api/admin/posts/route"; 
+
 
 export default function NewPostPage() {
   const router = useRouter();  // ページ遷都のリモコン
@@ -21,10 +23,19 @@ export default function NewPostPage() {
     setIsSubmitting(true);
 
     try {
+      // idのみ抽出して型整合を取る
+      const categoryIds = categories.map((c) => ({ id: c.id! }));
+      const body: CreatePostRequestBody = {
+        title,
+        content,
+        thumbnailUrl,
+        categories: categoryIds,
+      };
+
       const res = await fetch('/api/admin/posts/', {
         method: "POST",
         headers: {'Content-Type': 'application/json'},  // JSONを送ることを明示
-        body: JSON.stringify({title, content, thumbnailUrl, categories})
+        body: JSON.stringify(body),
       })
 
       const { id } = await res.json();  // { id: 3 }

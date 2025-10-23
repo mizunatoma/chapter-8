@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Category } from "@/app/_types";
 import { CategoryForm } from '../_components/CategoryForm'
+import type { UpdateCategoryRequestBody } from "@/app/api/admin/categories/[id]/route";
+
 
 export default function EditCategoriesPage() {
   const { id } = useParams() as { id?: string };
@@ -40,10 +42,11 @@ export default function EditCategoriesPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const body: UpdateCategoryRequestBody = { name };
       await fetch(`/api/admin/categories/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify(body),
       });
       alert("更新しました");
       router.push("/admin/categories")

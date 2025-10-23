@@ -29,19 +29,17 @@ export const GET = async (request: NextRequest) => {
 // ===============================
 // 新規作成（POST）
 // ===============================
-interface CreateCategoryRequestBody {
+export interface CreateCategoryRequestBody {
   name: string,
 }
 
-export const POST = async (request: NextRequest, context: any) => {
+export const POST = async (request: NextRequest) => {
   try {
-    const body = await request.json()
-    const { name }: CreateCategoryRequestBody = body
+    const body: CreateCategoryRequestBody = await request.json();
+    const { name } = body;
     
     const data = await prisma.category.create({
-      data: {
-        name,
-      },
+      data: { name },
     })
 
     return NextResponse.json({ 
