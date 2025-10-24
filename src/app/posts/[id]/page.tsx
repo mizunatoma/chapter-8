@@ -1,35 +1,29 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { MicroCmsPost } from "@/app/_types/MicroCmsPost";
-
-// PostDetailページ
-// → 動的ルーティング（ReactのuseParams的な）を理解する
+import { Posts } from "@/app/_types";
 
 export default function PostDetail() {
   const { id } = useParams(); 
-  const [post, setPost] = useState<MicroCmsPost | null>(null);
+  const [post, setPost] = useState<Posts | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetcher = async () => {
-      setLoading(true)
-      const res = await fetch(
-        `https://xtdq6xynpn.microcms.io/api/v1/posts/${id}`,　// microCMSのエンドポイント
-        {
-          headers: {
-            'X-MICROCMS-API-KEY': process.env.NEXT_PUBLIC_MICROCMS_API_KEY as string, // APIキーをセット
-          },
-        },
-      )
-      const data = await res.json()
-      setPost(data) // dataをそのままセット
-      setLoading(false)
+      try {
+        const res = await fetch(`/api/posts/${id}`)
+        const data = await res.json()
+        setPost(data.post) // PostsResponseのpost
+      } catch (error) {
+        console.error("データ取得エラー:", error);
+      } finally {
+        setLoading(false); // 読み込み完了
+      }
     }
-
-    fetcher()
-  }, [id])
+    fetcher();
+  }, [id]); // idが変わるたびに再描画
 
   if (loading) return <p>読み込み中...</p>
   if (!post) return <p className="text-red-600">記事が見つかりません</p>;
@@ -38,7 +32,7 @@ export default function PostDetail() {
   return (
     <article className="max-w-3x1 mx-auto p-6">
       <Image
-        src={post.thumbnail.url}
+        src={post.thumbnailUrl || "https://placehold.jp/800x400.png"}
         alt={`${post.title}`}
         width={800}
         height={400}
@@ -50,12 +44,12 @@ export default function PostDetail() {
           {new Date(post.createdAt).toLocaleDateString()}
         </p>
         <div className="flex gap-2">
-          {post.categories.map((cat, index) => (
+          {post.postCategories.map((cat, index) => (
             <span
               key={index}
               className="px-3 py-1 text-sm border border-blue-500 text-blue-600 rounded"
             >
-              {cat.name}
+              {cat.category.name}
             </span>
           ))}
         </div>
