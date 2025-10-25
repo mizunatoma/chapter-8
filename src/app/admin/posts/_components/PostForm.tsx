@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Category } from "@/app/_types";
 import { CategoriesSelect } from './CategoriesSelect'; 
-import { supabase } from '@/utils/supabase'
-import { v4 as uuidv4 } from 'uuid'  // 固有IDを生成するライブラリ
+import { supabase } from '@/utils/supabase';
+import { v4 as uuidv4 } from 'uuid';  // 固有IDを生成するライブラリ
+import Image from "next/image";
 
 
 interface Props {
@@ -37,16 +38,18 @@ export const PostForm: React.FC<Props> = ({
 }) => {
 
 const [thumbnailImageKey, setThumbnailImageKey] = useState('')
+const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string | null>(null);
 
+
+// ■ 2. 画像アップロード機能の実装
 const handleImageChange = async (
   event: ChangeEvent<HTMLInputElement>,
 ): Promise<void> => {
-  if (!event.target.files || event.target.length == 0) {
+  if (!event.target.files || event.target.length === 0) {
     return // 画像が選択されていないのでreturn
   }
 
   const file = event.target.files[0] //選択された画像を取得
-
   const filepath = `private/${uuidv4()}` // ファイルパスを指定
 
   // supabaseに画像をアップロード
@@ -66,6 +69,22 @@ const handleImageChange = async (
   // data.pathに、画像固有のkeyが入っているので、tumbnailImageKeyに格納する
   setThumbnailImageKey(data.path)
 }
+
+// ■ 3. アップロードした画像を表示する実装
+useEffect(() => {
+  if (!thumbnailImageKey) return
+
+  // ■ 2のアップロード処理のレスポンスで取得したthumbnailImageKeyを引数に、画像のURLを取得
+  const fetcher = async () => {
+    const { data: { publicUrl }} = await supabase.storage
+      .from(`post_thumbnail`)
+      .getPublicUrl(thumbnailImageKey)
+    
+    setThumbnailImageUrl(publicUrl)
+    setThumbnailUrl(publicUrl);
+  }
+  fetcher()
+}, [thumbnailImageKey])
 
   return (
     <div>
@@ -110,6 +129,17 @@ const handleImageChange = async (
             disabled={isSubmitting}
           />
         </div>
+
+        {thumbnailImageUrl && (
+          <div>
+            <Image
+              src={thumbnailImageUrl}
+              alt="thumbnail"
+              width={400}
+              height={400}
+            />
+          </div>
+        )}
 
         <div>
           <label
