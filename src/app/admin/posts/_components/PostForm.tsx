@@ -1,7 +1,10 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { Category } from "@/app/_types";
 import { CategoriesSelect } from './CategoriesSelect'; 
+import { supabase } from '@/utils/supabase'
+import { v4 as uuidv4 } from 'uuid'  // 固有IDを生成するライブラリ
+
 
 interface Props {
   mode: 'new' | 'edit'
@@ -32,6 +35,38 @@ export const PostForm: React.FC<Props> = ({
   onDelete,
   isSubmitting = false,
 }) => {
+
+const [thumbnailImageKey, setThumbnailImageKey] = useState('')
+
+const handleImageChange = async (
+  event: ChangeEvent<HTMLInputElement>,
+): Promise<void> => {
+  if (!event.target.files || event.target.length == 0) {
+    return // 画像が選択されていないのでreturn
+  }
+
+  const file = event.target.files[0] //選択された画像を取得
+
+  const filepath = `private/${uuidv4()}` // ファイルパスを指定
+
+  // supabaseに画像をアップロード
+  const { data, error } = await supabase.storage
+    .from('post_thumbnail') // ここでバケットを指定
+    .upload(filepath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+
+  // アップロードに失敗したらエラーを表示して終了
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  // data.pathに、画像固有のkeyが入っているので、tumbnailImageKeyに格納する
+  setThumbnailImageKey(data.path)
+}
+
   return (
     <div>
       <h1 className="text-xl font-bold mb-6">
@@ -63,12 +98,15 @@ export const PostForm: React.FC<Props> = ({
         </div>
 
         <div>
-          <label className="block">サムネイルURL</label>
+          <label 
+            htmlFor="thumbnailImageKey"
+            className="block text-sm font-medium text-gray-700"
+          >サムネイルURL</label>
           <input
-            type="text"
-            className="border rounded w-full p-2"
-            value={thumbnailUrl}
-            onChange={(e) => setThumbnailUrl(e.target.value)}
+            type="file"
+            id="thumbnailImageKey"
+            onChange={handleImageChange}
+            accept="image/*"
             disabled={isSubmitting}
           />
         </div>
