@@ -5,10 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import type { Category } from "@/app/_types";
 import { CategoryForm } from '../_components/CategoryForm'
 import type { UpdateCategoryRequestBody } from "@/app/api/admin/categories/[id]/route";
-
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 export default function EditCategoriesPage() {
   const { id } = useParams() as { id?: string };
+  const { token } = useSupabaseSession()
   const router = useRouter();
 
   const [category, setCategory] = useState<Category | null>(null);
@@ -20,9 +21,16 @@ export default function EditCategoriesPage() {
 // GET
 // ===============================
   useEffect(() => {
+    if (!token) return
+
     const fetcher = async () => {
       try {
-        const res = await fetch(`/api/admin/categories/${id}`);
+        const res = await fetch(`/api/admin/categories/${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token, // APIの利用制限
+          },
+        })
         const { category }: { category: Category } = await res.json()
         setCategory(category);
         setName(category.name);
@@ -33,7 +41,7 @@ export default function EditCategoriesPage() {
       }
     };
     fetcher();
-  }, [id]);
+  }, [token, id]);
 
 // ===============================
 // PUT (update)
@@ -41,11 +49,15 @@ export default function EditCategoriesPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    if (!token) return
+
     try {
       const body: UpdateCategoryRequestBody = { name };
       await fetch(`/api/admin/categories/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,
+        Authorization: token, // APIの利用制限
+        },
         body: JSON.stringify(body),
       });
       alert("更新しました");
@@ -63,8 +75,16 @@ export default function EditCategoriesPage() {
   const handleDelete = async () => {
     if (!confirm("カテゴリーを削除しますか？")) return;
     setIsSubmitting(true);
+    if (!token) return
+
     try {
-      await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+      await fetch(`/api/admin/categories/${id}`, { 
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token, // APIの利用制限
+        },
+      });
       alert("削除しました");
       router.push("/admin/categories");
     } catch (error) {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Category } from "@/app/_types"
 import { PostForm } from '../_components/PostForm'
 import type { CreatePostRequestBody } from "@/app/api/admin/posts/route"; 
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 
 export default function NewPostPage() {
@@ -14,6 +15,7 @@ export default function NewPostPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState('https://placehold.jp/800x400.png');
   const [categories, setCategories] = useState<Partial<Category>[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { token } = useSupabaseSession()
 
 // ===============================
 // POST (create)
@@ -21,6 +23,7 @@ export default function NewPostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault() // フォーム送信時のデフォルト動作（ページ再読み込み）を防止
     setIsSubmitting(true);
+    if (!token) return;
 
     try {
       // idのみ抽出して型整合を取る
@@ -34,7 +37,10 @@ export default function NewPostPage() {
 
       const res = await fetch('/api/admin/posts/', {
         method: "POST",
-        headers: {'Content-Type': 'application/json'},  // JSONを送ることを明示
+        headers: {
+          'Content-Type': 'application/json', // JSONを送ることを明示
+          Authorization: token, // APIの利用制限
+        },  
         body: JSON.stringify(body),
       })
 

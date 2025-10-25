@@ -6,10 +6,12 @@ import type { Posts } from "@/app/_types/";
 import { Category } from '@/app/_types/Category'
 import { PostForm } from '../_components/PostForm'
 import type { UpdatePostRequestBody } from "@/app/api/admin/posts/[id]/route"; 
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 
 export default function EditPostsPage() {
   const { id } = useParams() as { id?: string };  // as { id?: string } は型推論の補助（id が一時的にundefinedの可能性もあるため）
+    const { token } = useSupabaseSession()
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -19,13 +21,21 @@ export default function EditPostsPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
 // ===============================
 // GET
 // ===============================
   useEffect(() => {
+    if (!token) return
+
     const fetcher = async () => {
       try {
-        const res = await fetch(`/api/admin/posts/${id}`)
+        const res = await fetch(`/api/admin/posts/${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,    // APIの利用制限
+          },
+        })
         const { post }: { post: Posts } = await res.json()
         setTitle(post.title)
         setContent(post.content)
@@ -38,7 +48,7 @@ export default function EditPostsPage() {
       }
     };
     fetcher();
-  }, [id]);
+  }, [token, id]);
 
 
 // ===============================
@@ -47,6 +57,8 @@ export default function EditPostsPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    if (!token) return
+
     try {
       //categoriesのidのみ取り出して型に合わせる
       const categoryIds = categories.map((c) => ({ id: c.id! }));
@@ -59,7 +71,10 @@ export default function EditPostsPage() {
 
       await fetch(`/api/admin/posts/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: token,    // APIの利用制限
+        },
         body: JSON.stringify(body),
       });
       alert("更新しました");
@@ -77,9 +92,16 @@ export default function EditPostsPage() {
   const handleDelete = async () => {
     if (!confirm("記事を削除しますか？")) return;
     setIsSubmitting(true);
+    if (!token) return
+
     try {
       await fetch(`/api/admin/posts/${id}`, { 
-        method: "DELETE" });
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: token, // APIの利用制限
+          },
+      });
       alert("削除しました");
       router.push("/admin/posts");
     } catch (error) {

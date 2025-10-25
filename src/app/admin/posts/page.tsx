@@ -3,18 +3,27 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Posts } from "@/app/_types"
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 export default function AdminPostsPage() {
   const [posts, setPosts] = useState<Posts[]>([]);
   const [loading, setLoading] = useState(true);
+  const { token } = useSupabaseSession()
 
 // ===============================
 // GET
 // ===============================
   useEffect(() => {
+    if (!token) return;
+
     const fetcher = async () => {
       try {
-        const res = await fetch("/api/admin/posts")
+        const res = await fetch("/api/admin/posts", {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token, // 👈 Header に token を付与 (=APIの利用制限)
+          },
+        })
         const data = await res.json()
         setPosts(data.posts)
       } catch (error) {
@@ -24,7 +33,7 @@ export default function AdminPostsPage() {
       }
     }
     fetcher()
-  }, []);
+  }, [token]);
 
   if (loading) return <p>読み込み中...</p>;
 
