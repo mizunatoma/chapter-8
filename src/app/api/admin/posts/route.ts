@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { verifyAuth } from "@/app/api/_utils/verifyAuth";
 
 const prisma = new PrismaClient()
 
@@ -9,11 +10,14 @@ const prisma = new PrismaClient()
 // 一覧取得（GET）
 // ===============================
 export const GET = async (request: NextRequest) => {
+  const authError = await verifyAuth(request);
+  if (authError) return authError;
+
   try {
     const posts = await prisma.post.findMany({
       include: {
         postCategories: {
-          include: {
+          include: { 
             category: {
               select: {
                 id: true,
@@ -48,6 +52,9 @@ export interface CreatePostRequestBody {
 }
 
 export const POST = async (request: NextRequest ) => {
+  const authError = await verifyAuth(request);
+  if (authError) return authError;
+
   try {
     // フロントから送られてきたbodyを分解し、
     // 各変数に代入しながら、型をCreatePostRequestBodyとして保証している

@@ -2,6 +2,7 @@
 
 import { NextRequest,NextResponse } from "next/server";
 import { PrismaClient  } from "@prisma/client";
+import { verifyAuth } from "@/app/api/_utils/verifyAuth";
 
 const prisma = new PrismaClient()
 
@@ -12,8 +13,11 @@ export const GET = async(
   request: NextRequest, 
   { params } : { params: { id :string }},
 ) => {
-    // params から id を取り出す
-    const { id } = params
+  // params から id を取り出す
+  const { id } = params
+
+  const authError = await verifyAuth(request);
+  if (authError) return authError;
 
   try {
     const post = await prisma.post.findUnique({
@@ -59,6 +63,9 @@ export const PUT = async (
   const body: UpdatePostRequestBody = await request.json();
   const { title, content, categories, thumbnailUrl } = body;
   
+  const authError = await verifyAuth(request);
+  if (authError) return authError;
+
   try {
     const post = await prisma.post.update({
       where: { id: parseInt(id) },
@@ -110,6 +117,9 @@ export const DELETE = async (
 ) => {
   // params から id を取り出す
   const { id } = params
+
+  const authError = await verifyAuth(request);
+  if (authError) return authError;
 
   try {
     // ブログ記事テーブルのidを指定して削除
